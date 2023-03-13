@@ -195,25 +195,21 @@ Ray Camera::generate_ray(double x, double y) const {
   // canonical sensor plane one unit away from the pinhole.
   // Note: hFov and vFov are in degrees.
   //
+    float rhFov(hFov * PI / 180.0);
+    float rvFov(vFov * PI / 180.0);
+    float width(2 * tan(0.5 * rhFov));
+    float height(2 * tan(0.5 * rvFov));
+    
+    Vector3D cam_target(((x - 0.5) * width), ((y - 0.5) * height), -1);
 
-        // compute position of the input sensor sample coordinate on the
-        // canonical sensor plane one unit away from the pinhole.
-        double sensor_x = (2.0 * x - 1.0) * tan(radians(hFov) / 2.0);
-        double sensor_y = (2.0*y - 1.0) * tan(radians(vFov) / 2.0);
-        Vector3D sensor_point(sensor_x, sensor_y, -1.0);
+    Vector3D world_target(c2w * cam_target + pos);
+    world_target.normalize();
 
-        // transform the sensor point from camera space to world space
-        Vector3D world_sensor_point = c2w * sensor_point;
+    Ray world_ray(pos, world_target);
+    world_ray.max_t = fClip;
+    world_ray.min_t = nClip;
 
-        // construct a ray passing through the world sensor point
-        Vector3D ray_dir = (world_sensor_point - pos).unit();
-
-        return Ray(pos, ray_dir);
-    }
-
-
-
-  //return Ray(pos, Vector3D(0, 0, -1));
+  return world_ray;
 
 }
 
