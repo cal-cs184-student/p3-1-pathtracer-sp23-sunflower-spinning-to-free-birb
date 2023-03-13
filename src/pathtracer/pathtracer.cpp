@@ -194,14 +194,14 @@ void PathTracer::raytrace_pixel(size_t x, size_t y) {
   // Modify your implementation to include adaptive sampling.
   // Use the command line parameters "samplesPerBatch" and "maxTolerance"
 
-  int num_samples = ns_aa;          // total samples to evaluate
-  Vector2D origin = Vector2D(x, y); // bottom left corner of the pixel
-  Vector3D buff(0.0,0.0,0.0);
-  for (int i = 0; i < ns_aa; i++) {
-      Vector2D coord(origin + gridSampler->get_sample());
-      Ray random_ray(camera->generate_ray(coord.x / sampleBuffer.w, coord.y/ sampleBuffer.h));
-      Vector3D color(est_radiance_global_illumination(random_ray));
-      buff += color;
+  //int num_samples = ns_aa;          // total samples to evaluate
+  //Vector2D origin = Vector2D(x, y); // bottom left corner of the pixel
+ // Vector3D buff(0.0,0.0,0.0);
+  //for (int i = 0; i < ns_aa; i++) {
+    //  Vector2D coord(origin + gridSampler->get_sample());
+   //   Ray random_ray(camera->generate_ray(coord.x / sampleBuffer.w, coord.y/ sampleBuffer.h));
+    //  Vector3D color(est_radiance_global_illumination(random_ray));
+  //    buff += color;
   }
   buff *= 1.0/ns_aa;
   
