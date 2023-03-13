@@ -37,7 +37,15 @@ bool Triangle::intersect(const Ray &r, Intersection *isect) const {
   // Part 1, Task 3:
   // implement ray-triangle intersection. When an intersection takes
   // place, the Intersection data should be updated accordingly
-
+	Vector3D e1(p2 - p1), e2(p3 - p1);
+	Vector3D n(cross(e1, e2));
+	if (dot(n, r.d) == 0) return false;
+	Matrix3x3 mat(
+		-r.d.x, e1.x, e2.x,
+		-r.d.y, e1.y, e2.y,
+		-r.d.z, e1.z, e2.z);
+	Vector3D tuv(mat.inv() * (r.o - p1));
+	if(!())
 
   return true;
 
