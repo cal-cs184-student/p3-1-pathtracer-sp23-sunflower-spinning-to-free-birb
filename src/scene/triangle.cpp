@@ -61,7 +61,8 @@ bool Triangle::intersect(const Ray &r, Intersection *isect) const {
 	if (!((t >= r.min_t) && (t <= r.max_t))) return false;
 	r.max_t = t;
 	isect->t = t;
-	isect->n = n1*w + n2*u + n3*v;
+	isect->n = (n1 * w + n2 * u + n3 * v);
+	isect->n.normalize();
 	isect->primitive = this;
 	isect->bsdf = get_bsdf();
 

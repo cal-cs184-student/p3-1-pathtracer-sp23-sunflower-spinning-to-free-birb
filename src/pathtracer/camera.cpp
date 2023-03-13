@@ -203,7 +203,7 @@ namespace CGL {
 
         Vector3D cam_target(((x - 0.5) * width), ((y - 0.5) * height), -1);
 
-        Vector3D world_target(c2w * cam_target + pos);
+        Vector3D world_target(c2w * cam_target);
         world_target.normalize();
 
         Ray world_ray(pos, world_target);
