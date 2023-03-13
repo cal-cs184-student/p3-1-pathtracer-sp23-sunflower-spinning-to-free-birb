@@ -214,6 +214,4 @@ namespace CGL {
 
     }
 
-}
-
- // namespace CGL
+} // namespace CGL

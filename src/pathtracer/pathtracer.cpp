@@ -173,42 +173,41 @@ Vector3D PathTracer::est_radiance_global_illumination(const Ray &r) {
 }
 
 void PathTracer::raytrace_pixel(size_t x, size_t y) {
-  // TODO (Part 1.2):
-  // Make a loop that generates num_samples camera rays and traces them
-  // through the scene. Return the average Vector3D.
-  // You should call est_radiance_global_illumination in this function.
+    // TODO (Part 1.2):
+    // Make a loop that generates num_samples camera rays and traces them
+    // through the scene. Return the average Vector3D.
+    // You should call est_radiance_global_illumination in this function.
 
 
 
 
 
 
-  
-    }
 
 
 
 
 
-  // TODO (Part 5):
-  // Modify your implementation to include adaptive sampling.
-  // Use the command line parameters "samplesPerBatch" and "maxTolerance"
 
-  //int num_samples = ns_aa;          // total samples to evaluate
-  //Vector2D origin = Vector2D(x, y); // bottom left corner of the pixel
- // Vector3D buff(0.0,0.0,0.0);
-  //for (int i = 0; i < ns_aa; i++) {
-    //  Vector2D coord(origin + gridSampler->get_sample());
-   //   Ray random_ray(camera->generate_ray(coord.x / sampleBuffer.w, coord.y/ sampleBuffer.h));
-    //  Vector3D color(est_radiance_global_illumination(random_ray));
-  //    buff += color;
+    // TODO (Part 5):
+    // Modify your implementation to include adaptive sampling.
+    // Use the command line parameters "samplesPerBatch" and "maxTolerance"
+
+  int num_samples = ns_aa;          // total samples to evaluate
+  Vector2D origin = Vector2D(x, y); // bottom left corner of the pixel
+  Vector3D buff(0.0,0.0,0.0);
+  for (int i = 0; i < ns_aa; i++) {
+      Vector2D coord(origin + gridSampler->get_sample());
+      Ray random_ray(camera->generate_ray(coord.x / sampleBuffer.w, coord.y/ sampleBuffer.h));
+      Vector3D color(est_radiance_global_illumination(random_ray));
+      buff += color;
   }
   buff *= 1.0/ns_aa;
   
 
-  sampleBuffer.update_pixel(buff, x, y);
-  //sampleCountBuffer[x + y * sampleBuffer.w] = num_samples;
-
+    sampleBuffer.update_pixel(buff, x, y);
+    //sampleCountBuffer[x + y * sampleBuffer.w] = num_samples;
+}
 
 
 void PathTracer::autofocus(Vector2D loc) {
