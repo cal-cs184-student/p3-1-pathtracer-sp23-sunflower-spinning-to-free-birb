@@ -187,6 +187,7 @@ void Camera::load_settings(string filename) {
 /**
  * This function generates a ray from camera perspective, passing through camera / sensor plane (x,y)
  */
+
 Ray Camera::generate_ray(double x, double y) const {
 
   // TODO (Part 1.1):
@@ -195,9 +196,25 @@ Ray Camera::generate_ray(double x, double y) const {
   // Note: hFov and vFov are in degrees.
   //
 
+        // compute position of the input sensor sample coordinate on the
+        // canonical sensor plane one unit away from the pinhole.
+        double sensor_x = (2.0 * x - 1.0) * tan(radians(hFov) / 2.0);
+        double sensor_y = (2.0*y - 1.0) * tan(radians(vFov) / 2.0);
+        Vector3D sensor_point(sensor_x, sensor_y, -1.0);
 
-  return Ray(pos, Vector3D(0, 0, -1));
+        // transform the sensor point from camera space to world space
+        Vector3D world_sensor_point = c2w * sensor_point;
+
+        // construct a ray passing through the world sensor point
+        Vector3D ray_dir = (world_sensor_point - pos).unit();
+
+        return Ray(pos, ray_dir);
+    }
+
+
+
+  //return Ray(pos, Vector3D(0, 0, -1));
 
 }
 
-} // namespace CGL
+ // namespace CGL
