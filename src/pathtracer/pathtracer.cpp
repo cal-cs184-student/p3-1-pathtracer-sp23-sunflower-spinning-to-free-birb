@@ -179,16 +179,6 @@ void PathTracer::raytrace_pixel(size_t x, size_t y) {
     // You should call est_radiance_global_illumination in this function.
 
 
-
-
-
-
-
-
-
-
-
-
     // TODO (Part 5):
     // Modify your implementation to include adaptive sampling.
     // Use the command line parameters "samplesPerBatch" and "maxTolerance"
