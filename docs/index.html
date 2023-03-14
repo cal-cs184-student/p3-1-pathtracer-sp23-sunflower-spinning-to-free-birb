@@ -97,7 +97,13 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
         Walk through the ray generation and primitive intersection parts of the rendering pipeline.
     </h3>
     <p>
+        The ray generation and primitive intersection parts of the rendering pipeline are two key stages in the process of generating an image from a 3D scene using a raytracer.
     </p>
+
+    <p>
+        At a high level, the ray generation stage involves generating a set of rays that are cast from the camera through the pixels of the image. Each ray represents a straight line from the camera position through a pixel and into the 3D scene. The primitive intersection stage involves computing the intersection of each ray with the primitives in the scene, such as spheres or triangles, in order to determine what objects in the scene are visible from the camera viewpoint.
+    </p>
+
     <p>
         We fill in the function <b>Camera::generate_ray(...)</b>, which takes the normalized image coordinates (x,y) as input and outputs a Ray in the world space and <b>PathTracer::raytrace_pixel(...)</b>
         , which takes pixel coordinates(x,y) as input and updates the corresponding pixel.
@@ -137,13 +143,13 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
             <img src="images/eA4.svg" /> <br />
             <img src="images/eA5.svg" /> <br />
 
-                                         <p>
-                                             <b>Variables used for implementation:</b> <br>
-                                             define the sensor: hFov,vFov <br>
-                                             camera position in the world place:pos <br>
-                                             the camera-to-world rotation matrix:c2w <br>
-                                             define the visible edge of the camera:nclip&fclip <br>
-                                         </p>
+            <p>
+                <b>Variables used for implementation:</b> <br />
+                define the sensor: hFov,vFov <br />
+                camera position in the world place:pos <br />
+                the camera-to-world rotation matrix:c2w <br />
+                define the visible edge of the camera:nclip&fclip <br />
+            </p>
 
 
 
@@ -163,7 +169,7 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
                 In the loop, we generate a random ray through the pixel using camera->generate_ray and trace it through the scene using est_radiance_global_illumination. The resulting radiance value is accumulated in the variable L_out. After ns_aa samples have been taken, we average the radiance values by dividing L_out by ns_aa. Finally, we update the corresponding pixel in the sampleBuffer with the final estimate using sampleBuffer.update_pixel.
             </p>
 
-            </li>
+        </li>
 
     </ul>
     </p>
@@ -173,9 +179,49 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
         Explain the triangle intersection algorithm you implemented in your own words.
     </h3>
     <p>
-        YOUR RESPONSE GOES HERE
+        The Möller–Trumbore intersection algorithm we implemented is a method for efficiently testing if a ray intersects with a triangle in 3D space.
     </p>
     <br />
+
+    <p>
+        The ray is defined by an origin point O and a direction vector <b>v</b>. Every point on the ray can be expressed by \begin{aligned}t=O+tv\end{aligned}, where the parameter t ranges from zero to infinity. The triangle is defined by three vertices.
+    </p>
+
+    <p>
+        Using barycentric coordinates, any point on the triangle can be expressed as a convex combination of the triangle's verticies: P=wv<sub>1</sub>+uv<sub>2</sub>+vv<sub>3</sub>
+    </p>
+
+    <p>
+        The coefficients must be non-negative and sum to 1, so w can be replaced with 1-u-v:
+    </p>
+
+    <p>
+        \begin{aligned}P&=(1-u-v)v_{1}+uv_{2}+vv_{3}\\P&=v_{1}+u(v_{2}-v_{1})+v(v_{3}-v_{1})\end{aligned}
+        , where P is any point on the plane.
+    </p>
+
+
+
+    <p>
+        To find u and v for a particular intersection, set the ray expression equal to the plane expression, and put the variables on one side and the constants on the other.
+    </p>
+
+    <p>
+        \begin{aligned}O+tD&=v_{1}+u(v_{2}-v_{1})+v(v_{3}-v_{1})\\O-v_{1}&=-tD+u(v_{2}-v_{1})+v(v_{3}-v_{1})\end{aligned}
+    </p>
+
+    <p>
+        This is a system of linear equations with three equations (one each for  x, y, z) and three unknowns (t, u, v), and can be represented as a matrix-vector multiplication.
+
+    </p>
+
+    <img src="images/eAX.svg" /> <br />
+
+
+    <p>
+        To perform the intersection test, the algorithm first computes the edge vectors of the triangle and the vector from the ray origin to one of the triangle's vertices. Then it computes the normal vector of the triangle as the cross product of two of its edge vectors.Next, the algorithm calculates the determinant of the matrix formed by the ray direction and the edge vectors of the triangle. If this determinant is close to zero, then the ray and the triangle are parallel and there is no intersection. If the determinant is non-zero, the algorithm continues by calculating the inverse of the determinant and using it to compute the parameters of the barycentric coordinate system of the intersection point.Finally, the algorithm checks whether the barycentric coordinates of the intersection point are within the range of [0,1], indicating that the intersection point lies within the triangle. If so, the algorithm returns the distance of the intersection point along the ray direction as well as the barycentric coordinates of the intersection point.Overall, the Möller–Trumbore algorithm is a simple and efficient method for testing ray-triangle intersections, making it a popular choice for use in real-time rendering applications.
+
+    </p>
 
     <h3>
         Show images with normal shading for a few small .dae files.
@@ -186,21 +232,21 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
             <tr align="center">
                 <td>
                     <img src="images/test_banana.png" align="middle" width="400px" />
-                    
+
                 </td>
                 <td>
                     <img src="images/test_building.png" align="middle" width="400px" />
-                   
+
                 </td>
             </tr>
             <tr align="center">
                 <td>
                     <img src="images/test_cube.png" align="middle" width="400px" />
-                   
+
                 </td>
                 <td>
                     <img src="images/test_plane.png" align="middle" width="400px" />
-                  
+
                 </td>
             </tr>
         </table>
@@ -216,7 +262,7 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
     <h3>
         Walk through your BVH construction algorithm. Explain the heuristic you chose for picking the splitting point.
     </h3>
-    <p>
+    </p><p>
         YOUR RESPONSE GOES HERE
     </p>
 
