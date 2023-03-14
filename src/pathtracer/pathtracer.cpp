@@ -68,13 +68,29 @@ PathTracer::estimate_direct_lighting_hemisphere(const Ray &r,
   // estimate_direct_lighting_importance (outside of delta lights). We keep the
   // same number of samples for clarity of comparison.
   int num_samples = scene->lights.size() * ns_area_light;
-  Vector3D L_out;
+  Vector3D L_out(0.0);
 
   // TODO (Part 3): Write your sampling loop here
   // TODO BEFORE YOU BEGIN
   // UPDATE `est_radiance_global_illumination` to return direct lighting instead of normal shading 
 
-  return Vector3D(1.0);
+  for (int i = 0; i < num_samples; i++) {
+      Vector3D w_in(hemisphereSampler->get_sample());
+      Vector3D w_in_w(o2w * w_in);
+      w_in.normalize();
+      w_in_w.normalize();
+      Ray out(hit_p, w_in_w);
+      out.min_t = EPS_D;
+      out.max_t = INF_D;
+      Intersection isect2;
+      if (!(bvh->intersect(out, &isect2))) continue;
+      Vector3D L(isect2.bsdf->get_emission());
+      Vector3D fr(isect.bsdf->f(w_out, w_in));
+      double cosTheta(cos_theta(w_in));
+      double Pwi(2 * PI);
+      L_out += ((fr * L * cosTheta) / Pwi);
+  }
+  return L_out;
 
 }
 
@@ -95,10 +111,49 @@ PathTracer::estimate_direct_lighting_importance(const Ray &r,
   // toward the camera if this is a primary ray)
   const Vector3D hit_p = r.o + r.d * isect.t;
   const Vector3D w_out = w2o * (-r.d);
-  Vector3D L_out;
+  Vector3D L_out(0.0);
+  int sample_count(0);
+
+  for (auto l = scene->lights.begin(); l != scene->lights.end(); l++) {
+      if ((*l)->is_delta_light()) {
+          sample_count += 1;
+          Vector3D wi, wio;
+          double distToLight, pdf;
+          Vector3D radiance = (*l)->sample_L(hit_p, &wi, &distToLight, &pdf);
+          if (wi.z < 0) continue;
+          Ray out(hit_p, wi);
+          wio = w2o * wi;
+          wio.normalize();
+          out.min_t = EPS_D;
+          out.max_t = distToLight - EPS_D;
+          if ((bvh->has_intersection(out))) continue;
+          Vector3D fr(isect.bsdf->f(w_out, wio));
+          double cosTheta(cos_theta(wio));
+          L_out += ((fr * radiance * cosTheta) / pdf);
+      }
+      else {
+          Vector3D L_out_Local(0.0);
+          for (int i = 0; i < ns_area_light; i++) {
+              Vector3D wi, wio;
+              double distToLight, pdf;
+              Vector3D radiance = (*l)->sample_L(hit_p, &wi, &distToLight, &pdf);
+              if (wi.z < 0) continue;
+              Ray out(hit_p, wi);
+              wio = w2o * wi;
+              wio.normalize();
+              out.min_t = EPS_D;
+              out.max_t = distToLight - EPS_D;
+              if ((bvh->has_intersection(out))) continue;
+              Vector3D fr(isect.bsdf->f(w_out, wio));
+              double cosTheta(cos_theta(wio));
+              L_out_Local += ((fr * radiance * cosTheta) / pdf);
+          }
+          L_out += L_out_Local / ns_area_light;
+      }
+  }
 
 
-  return Vector3D(1.0);
+  return L_out;
 
 }
 
@@ -106,9 +161,9 @@ Vector3D PathTracer::zero_bounce_radiance(const Ray &r,
                                           const Intersection &isect) {
   // TODO: Part 3, Task 2
   // Returns the light that results from no bounces of light
+    
 
-
-  return Vector3D(1.0);
+  return isect.bsdf->get_emission();
 
 
 }
@@ -118,10 +173,12 @@ Vector3D PathTracer::one_bounce_radiance(const Ray &r,
   // TODO: Part 3, Task 3
   // Returns either the direct illumination by hemisphere or importance sampling
   // depending on `direct_hemisphere_sample`
-
-
-  return Vector3D(1.0);
-
+    if (direct_hemisphere_sample) {
+        return estimate_direct_lighting_hemisphere(r, isect);
+    }
+    else {
+        return estimate_direct_lighting_importance(r, isect);
+    }
 
 }
 
@@ -161,8 +218,9 @@ Vector3D PathTracer::est_radiance_global_illumination(const Ray &r) {
   if (!bvh->intersect(r, &isect))
     return envLight ? envLight->sample_dir(r) : L_out;
 
-
-  L_out = (isect.t == INF_D) ? debug_shading(r.d) : normal_shading(isect.n);
+  if (isect.t == INF_D) return debug_shading(r.d);
+  L_out = zero_bounce_radiance(r, isect);
+  L_out += one_bounce_radiance(r, isect);
 
   // TODO (Part 3): Return the direct illumination.
 
