@@ -37,7 +37,7 @@ bool Triangle::has_intersection(const Ray &r) const {
 	Vector3D tuv(mat.inv() * (r.o - p1));
 	float t(tuv.x), u(tuv.y), v(tuv.z), w(1.0 - u - v);
 	if (!((u >= 0.0) && (v >= 0.0) && (w >= 0.0))) return false;
-	if (!((t >= r.min_t) && (t <= r.max_t))) return false;
+	if (!((t > r.min_t) && (t < r.max_t))) return false;
 	r.max_t = t;
 
   return true;
@@ -58,7 +58,7 @@ bool Triangle::intersect(const Ray &r, Intersection *isect) const {
 	Vector3D tuv(mat.inv() * (r.o - p1));
 	float t(tuv.x), u(tuv.y), v(tuv.z), w(1.0 - u - v);
 	if (!((u >= 0.0) && (v >= 0.0) && (w >= 0.0))) return false;
-	if (!((t >= r.min_t) && (t <= r.max_t))) return false;
+	if (!((t > r.min_t) && (t < r.max_t))) return false;
 	r.max_t = t;
 	isect->t = t;
 	isect->n = (n1 * w + n2 * u + n3 * v);
