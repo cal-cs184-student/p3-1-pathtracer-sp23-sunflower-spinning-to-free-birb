@@ -48,24 +48,7 @@ bool Triangle::intersect(const Ray &r, Intersection *isect) const {
   // Part 1, Task 3:
   // implement ray-triangle intersection. When an intersection takes
   // place, the Intersection data should be updated accordingly
-<<<<<<< HEAD
-	//Vector3D e1(p2 - p1), e2(p3 - p1);
-	//Vector3D n(cross(e1, e2));
-	//if (abs(dot(n, r.d) - 0.0) <= 0.000001) return false;
-	//Matrix3x3 mat(
-	//	-r.d.x, e1.x, e2.x,
-	//	-r.d.y, e1.y, e2.y,
-	//	-r.d.z, e1.z, e2.z);
-	//Vector3D tuv(mat.inv() * (r.o - p1));
-	//float t(tuv.x), u(tuv.y), v(tuv.z), w(1.0 - u - v);
-	//if (!((u >= 0.0) && (v >= 0.0) && (w >= 0.0))) return false;
-	//if (!((t >= r.min_t) && (t <= r.max_t))) return false;
-	//r.max_t = t;
-	//isect->t = t;
-	//isect->n = n1*w + n2*u + n3*v;
-	//isect->primitive = this;
-	//isect->bsdf = get_bsdf();
-=======
+
 	Vector3D e1(p2 - p1), e2(p3 - p1);
 	Vector3D n(cross(e1, e2));
 	if (abs(dot(n, r.d) - 0.0) <= 0.000001) return false;
@@ -83,7 +66,7 @@ bool Triangle::intersect(const Ray &r, Intersection *isect) const {
 	isect->n.normalize();
 	isect->primitive = this;
 	isect->bsdf = get_bsdf();
->>>>>>> 50f0dad0cff3dde39235875bf663246bc4a7c69e
+
 
   return true;
 
