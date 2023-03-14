@@ -1,4 +1,5 @@
 #include "bvh.h"
+#include "bvh.h"
 
 #include "CGL/CGL.h"
 #include "triangle.h"
@@ -58,20 +59,66 @@ BVHNode *BVHAccel::construct_bvh(std::vector<Primitive *>::iterator start,
   // single leaf node (which is also the root) that encloses all the
   // primitives.
 
-
   BBox bbox;
 
   for (auto p = start; p != end; p++) {
-    BBox bb = (*p)->get_bbox();
-    bbox.expand(bb);
+      BBox bb = (*p)->get_bbox();
+      bbox.expand(bb);
   }
 
-  BVHNode *node = new BVHNode(bbox);
-  node->start = start;
-  node->end = end;
+  BVHNode* node = new BVHNode(bbox);
 
+  if ((end - start) <= max_leaf_size) {
+
+      node->start = start;
+      node->end = end;
+
+      return node;
+  }
+
+  BBox candidate[3][16][2] = {0};
+  int buckets[3][16][2] = {0};
+  double lowest_cost = INF_D;
+  for (int i = 0; i < 3; i++) {
+        for (int j = 1; j < 16; j++) {
+            double plane = bbox.min[i] + ((bbox.max[i] - bbox.min[i]) / 16.0) * j;
+            for (auto p = start; p != end; p++) {
+                BBox bb = (*p)->get_bbox();
+                if (bb.centroid()[i] < plane) {
+                    candidate[i][j][0].expand(bb);
+                    buckets[i][j][0] ++;
+                }
+                else {
+                    candidate[i][j][1].expand(bb);
+                    buckets[i][j][1] ++;
+                }
+            }
+            double cost = buckets[i][j][1] * candidate[i][j][1].surface_area() 
+                + buckets[i][j][0] * candidate[i][j][0].surface_area();
+            if (buckets[i][j][0] * buckets[i][j][1] == 0) continue;
+            if (cost < lowest_cost) {
+                axis = i; 
+                bucket = j;
+                lowest_cost = cost;
+            }
+        }
+  }
+
+  plane = bbox.min[axis] + ((bbox.max[axis] - bbox.min[axis]) / 16.0) * bucket;
+
+  std::vector<Primitive*>::iterator bound = partition(start, end, [this](Primitive* p) {
+          BBox bb = p->get_bbox();
+          if (bb.centroid()[axis] < plane) {
+              return true;
+          }
+          else {
+              return false;
+          }
+      });
+  //cout << end - start << ", " << bound - start << ", " << end - bound << endl;
+  node->l = construct_bvh(start, bound, max_leaf_size);
+  node->r = construct_bvh(bound, end, max_leaf_size);
   return node;
-
 
 }
 

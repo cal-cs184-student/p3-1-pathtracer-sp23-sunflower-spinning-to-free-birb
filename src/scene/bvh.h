@@ -135,6 +135,10 @@ class BVHAccel : public Aggregate {
 
   mutable unsigned long long total_rays, total_isects;
 
+  double plane;
+  
+  int axis, bucket;
+
 private:
   std::vector<Primitive*> primitives;
   BVHNode* root; ///< root node of the BVH
