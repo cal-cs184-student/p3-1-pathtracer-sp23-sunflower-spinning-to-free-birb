@@ -14,7 +14,6 @@ bool BBox::intersect(const Ray& r, double& t0, double& t1) const {
   // If the ray intersected the bouding box within the range given by
   // t0, t1, update t0 and t1 with the new intersection times.
 	double t[3][2] = { 0 };
-	std::swap(t0, t1);
 	for (int i = 0; i < 3; i++) {
 		t[i][0] = (min[i] - r.o[i]) / r.d[i];
 		t[i][1] = (max[i] - r.o[i]) / r.d[i];

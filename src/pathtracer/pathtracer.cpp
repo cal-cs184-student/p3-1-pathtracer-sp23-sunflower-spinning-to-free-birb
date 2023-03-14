@@ -90,7 +90,6 @@ PathTracer::estimate_direct_lighting_hemisphere(const Ray &r,
       double Pwi(2 * PI);
       L_out += ((fr * L * cosTheta) / Pwi);
   }
-  L_out / num_samples;
   return L_out;
 
 }
@@ -112,10 +111,45 @@ PathTracer::estimate_direct_lighting_importance(const Ray &r,
   // toward the camera if this is a primary ray)
   const Vector3D hit_p = r.o + r.d * isect.t;
   const Vector3D w_out = w2o * (-r.d);
-  Vector3D L_out;
+  Vector3D L_out(0.0);
+  int sample_count(0);
+
+  for (auto l = scene->lights.begin(); l != scene->lights.end(); l++) {
+      if ((*l)->is_delta_light()) {
+          sample_count += 1;
+          Vector3D wi;
+          double distToLight, pdf;
+          Vector3D radiance = (*l)->sample_L(hit_p, &wi, &distToLight, &pdf);
+          if (wi.z < 0) continue;
+          Ray out(hit_p, wi);
+          out.min_t = EPS_D;
+          out.max_t = distToLight - EPS_D;
+          if ((bvh->has_intersection(out))) continue;
+          Vector3D fr(isect.bsdf->f(w_out, w2o * wi));
+          double cosTheta(cos_theta(wi));
+          L_out += ((fr * radiance * cosTheta) / pdf);
+      }
+      else {
+          Vector3D L_out_Local(0.0);
+          for (int i = 0; i < ns_area_light; i++) {
+              Vector3D wi;
+              double distToLight, pdf;
+              Vector3D radiance = (*l)->sample_L(hit_p, &wi, &distToLight, &pdf);
+              if (wi.z < 0) continue;
+              Ray out(hit_p, wi);
+              out.min_t = EPS_D;
+              out.max_t = distToLight - EPS_D;
+              if ((bvh->has_intersection(out))) continue;
+              Vector3D fr(isect.bsdf->f(w_out, w2o * wi));
+              double cosTheta(cos_theta(wi));
+              L_out_Local += ((fr * radiance * cosTheta) / pdf);
+          }
+          L_out += L_out_Local / ns_area_light;
+      }
+  }
 
 
-  return Vector3D(1.0);
+  return L_out;
 
 }
 
@@ -135,10 +169,12 @@ Vector3D PathTracer::one_bounce_radiance(const Ray &r,
   // TODO: Part 3, Task 3
   // Returns either the direct illumination by hemisphere or importance sampling
   // depending on `direct_hemisphere_sample`
-
-
-  return estimate_direct_lighting_hemisphere(r, isect);
-
+    if (direct_hemisphere_sample) {
+        return estimate_direct_lighting_hemisphere(r, isect);
+    }
+    else {
+        return estimate_direct_lighting_importance(r, isect);
+    }
 
 }
 
