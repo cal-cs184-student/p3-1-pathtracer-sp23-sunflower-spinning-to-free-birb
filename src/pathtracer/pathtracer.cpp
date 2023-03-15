@@ -87,7 +87,7 @@ PathTracer::estimate_direct_lighting_hemisphere(const Ray &r,
       Vector3D L(isect2.bsdf->get_emission());
       Vector3D fr(isect.bsdf->f(w_out, w_in));
       double cosTheta(cos_theta(w_in));
-      double Pwi(2 * PI);
+      double Pwi(PI);
       L_out += ((fr * L * cosTheta) / Pwi);
   }
   return L_out;
@@ -112,18 +112,15 @@ PathTracer::estimate_direct_lighting_importance(const Ray &r,
   const Vector3D hit_p = r.o + r.d * isect.t;
   const Vector3D w_out = w2o * (-r.d);
   Vector3D L_out(0.0);
-  int sample_count(0);
 
   for (auto l = scene->lights.begin(); l != scene->lights.end(); l++) {
       if ((*l)->is_delta_light()) {
-          sample_count += 1;
-          Vector3D wi, wio;
-          double distToLight, pdf;
-          Vector3D radiance = (*l)->sample_L(hit_p, &wi, &distToLight, &pdf);
-          if (wi.z < 0) continue;
-          Ray out(hit_p, wi);
+          Vector3D wi(0.0), wio(0.0);
+          double distToLight(0.0), pdf(0.0);
+          Vector3D radiance((*l)->sample_L(hit_p, &wi, &distToLight, &pdf));
           wio = w2o * wi;
-          wio.normalize();
+          if (wio.z < 0) continue;
+          Ray out(hit_p, wi);
           out.min_t = EPS_D;
           out.max_t = distToLight - EPS_D;
           if ((bvh->has_intersection(out))) continue;
@@ -134,13 +131,12 @@ PathTracer::estimate_direct_lighting_importance(const Ray &r,
       else {
           Vector3D L_out_Local(0.0);
           for (int i = 0; i < ns_area_light; i++) {
-              Vector3D wi, wio;
-              double distToLight, pdf;
-              Vector3D radiance = (*l)->sample_L(hit_p, &wi, &distToLight, &pdf);
-              if (wi.z < 0) continue;
-              Ray out(hit_p, wi);
+              Vector3D wi(0.0), wio(0.0);
+              double distToLight(0.0), pdf(0.0);
+              Vector3D radiance((*l)->sample_L(hit_p, &wi, &distToLight, &pdf));
               wio = w2o * wi;
-              wio.normalize();
+              if (wio.z < 0) continue;
+              Ray out(hit_p, wi);
               out.min_t = EPS_D;
               out.max_t = distToLight - EPS_D;
               if ((bvh->has_intersection(out))) continue;
@@ -148,7 +144,7 @@ PathTracer::estimate_direct_lighting_importance(const Ray &r,
               double cosTheta(cos_theta(wio));
               L_out_Local += ((fr * radiance * cosTheta) / pdf);
           }
-          L_out += L_out_Local / ns_area_light;
+          L_out += L_out_Local / (double) ns_area_light;
       }
   }
 
@@ -218,7 +214,7 @@ Vector3D PathTracer::est_radiance_global_illumination(const Ray &r) {
   if (!bvh->intersect(r, &isect))
     return envLight ? envLight->sample_dir(r) : L_out;
 
-  if (isect.t == INF_D) return debug_shading(r.d);
+  //if (isect.t == INF_D) return debug_shading(r.d);
   L_out = zero_bounce_radiance(r, isect);
   L_out += one_bounce_radiance(r, isect);
 

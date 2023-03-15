@@ -129,7 +129,8 @@ bool BVHAccel::has_intersection(const Ray &ray, BVHNode *node) const {
   // Intersection version cannot, since it returns as soon as it finds
   // a hit, it doesn't actually have to find the closest hit.
 
-    double t0, t1;
+    
+    double t0 = ray.min_t, t1 = ray.max_t;
     if (!(node->bb.intersect(ray, t0, t1))) return false;
     if (node->isLeaf()) {
         for (auto p = node->start; p != node->end; p++) {
@@ -140,9 +141,7 @@ bool BVHAccel::has_intersection(const Ray &ray, BVHNode *node) const {
         return false;
     }
     else {
-        bool hit1 = has_intersection(ray, node->l);
-        bool hit2 = has_intersection(ray, node->r);
-        return hit1 || hit2;
+        return (has_intersection(ray, node->l) || has_intersection(ray, node->r));
     }
 
 }
