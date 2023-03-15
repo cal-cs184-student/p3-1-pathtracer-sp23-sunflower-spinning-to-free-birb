@@ -80,17 +80,16 @@ PathTracer::estimate_direct_lighting_hemisphere(const Ray &r,
       w_in.normalize();
       w_in_w.normalize();
       Ray out(hit_p, w_in_w);
-      out.min_t = EPS_D;
-      out.max_t = INF_D;
+      out.min_t = EPS_F;
+      out.max_t = INF_F;
       Intersection isect2;
       if (!(bvh->intersect(out, &isect2))) continue;
       Vector3D L(isect2.bsdf->get_emission());
       Vector3D fr(isect.bsdf->f(w_out, w_in));
       double cosTheta(cos_theta(w_in));
-      double Pwi(PI);
-      L_out += ((fr * L * cosTheta) / Pwi);
+      L_out += ((fr * L * cosTheta) * 2 * PI);
   }
-  return L_out;
+  return L_out /(double) num_samples;
 
 }
 
@@ -121,8 +120,8 @@ PathTracer::estimate_direct_lighting_importance(const Ray &r,
           wio = w2o * wi;
           if (wio.z < 0) continue;
           Ray out(hit_p, wi);
-          out.min_t = EPS_D;
-          out.max_t = distToLight - EPS_D;
+          out.min_t = EPS_F;
+          out.max_t = distToLight - EPS_F;
           if ((bvh->has_intersection(out))) continue;
           Vector3D fr(isect.bsdf->f(w_out, wio));
           double cosTheta(cos_theta(wio));
@@ -137,8 +136,8 @@ PathTracer::estimate_direct_lighting_importance(const Ray &r,
               wio = w2o * wi;
               if (wio.z < 0) continue;
               Ray out(hit_p, wi);
-              out.min_t = EPS_D;
-              out.max_t = distToLight - EPS_D;
+              out.min_t = EPS_F;
+              out.max_t = distToLight - EPS_F;
               if ((bvh->has_intersection(out))) continue;
               Vector3D fr(isect.bsdf->f(w_out, wio));
               double cosTheta(cos_theta(wio));
@@ -187,7 +186,27 @@ Vector3D PathTracer::at_least_one_bounce_radiance(const Ray &r,
   Vector3D hit_p = r.o + r.d * isect.t;
   Vector3D w_out = w2o * (-r.d);
 
-  Vector3D L_out(0, 0, 0);
+  Vector3D L_out(0.0, 0.0, 0.0);
+
+  L_out += one_bounce_radiance(r, isect);
+
+  if (r.depth != 1) {
+      if (coin_flip(0.6)) {
+          Vector3D wi(0.0);
+          double pdf;
+          Vector3D fr(isect.bsdf->sample_f(w_out, &wi, &pdf));
+          Vector3D wi_w = o2w * wi;
+          wi_w.normalize();
+          Ray r_recur(hit_p, wi, (int) r.depth - 1);
+          r_recur.min_t = EPS_F;
+          Intersection isect2;
+          if (bvh->intersect(r_recur, &isect2)) {
+              Vector3D radiance(at_least_one_bounce_radiance(r_recur, isect2));
+              double cosTheta(cos_theta(wi_w));
+              L_out += ((fr * radiance * cosTheta) / pdf) / 0.6;
+          }
+      }
+  }
 
   // TODO: Part 4, Task 2
   // Returns the one bounce radiance + radiance from extra bounces at this point.
@@ -214,9 +233,9 @@ Vector3D PathTracer::est_radiance_global_illumination(const Ray &r) {
   if (!bvh->intersect(r, &isect))
     return envLight ? envLight->sample_dir(r) : L_out;
 
-  //if (isect.t == INF_D) return debug_shading(r.d);
+  //if (isect.t == INF_F) return debug_shading(r.d);
   L_out = zero_bounce_radiance(r, isect);
-  L_out += one_bounce_radiance(r, isect);
+  L_out += at_least_one_bounce_radiance(r, isect);
 
   // TODO (Part 3): Return the direct illumination.
 
@@ -243,6 +262,7 @@ void PathTracer::raytrace_pixel(size_t x, size_t y) {
   for (int i = 0; i < ns_aa; i++) {
       Vector2D coord(origin + gridSampler->get_sample());
       Ray random_ray(camera->generate_ray(coord.x / sampleBuffer.w, coord.y/ sampleBuffer.h));
+      random_ray.depth = max_ray_depth;
       Vector3D color(est_radiance_global_illumination(random_ray));
       buff += color;
   }

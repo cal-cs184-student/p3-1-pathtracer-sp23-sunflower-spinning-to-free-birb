@@ -196,10 +196,10 @@ namespace CGL {
         // canonical sensor plane one unit away from the pinhole.
         // Note: hFov and vFov are in degrees.
         //
-        float rhFov(hFov * PI / 180.0);
-        float rvFov(vFov * PI / 180.0);
-        float width(2 * tan(0.5 * rhFov));
-        float height(2 * tan(0.5 * rvFov));
+        double rhFov(hFov * PI / 180.0);
+        double rvFov(vFov * PI / 180.0);
+        double width(2 * tan(0.5 * rhFov));
+        double height(2 * tan(0.5 * rvFov));
 
         Vector3D cam_target(((x - 0.5) * width), ((y - 0.5) * height), -1);
 

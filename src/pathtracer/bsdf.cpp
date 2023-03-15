@@ -54,7 +54,7 @@ Vector3D DiffuseBSDF::f(const Vector3D wo, const Vector3D wi) {
   // This function takes in both wo and wi and returns the evaluation of
   // the BSDF for those two directions.
 
-  return reflectance;
+  return reflectance / PI;
 
 }
 
@@ -70,7 +70,7 @@ Vector3D DiffuseBSDF::sample_f(const Vector3D wo, Vector3D *wi, double *pdf) {
   // You can use the `f` function. The reference solution only takes two lines.
     *wi = sampler.get_sample(pdf);
 
-  return Vector3D(1.0);
+  return f(wo, *wi);
 
 }
 
