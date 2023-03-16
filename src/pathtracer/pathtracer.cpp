@@ -80,8 +80,8 @@ PathTracer::estimate_direct_lighting_hemisphere(const Ray &r,
       w_in.normalize();
       w_in_w.normalize();
       Ray out(hit_p, w_in_w);
-      out.min_t = EPS_F;
-      out.max_t = INF_F;
+      out.min_t = EPS_D;
+      out.max_t = INF_D;
       Intersection isect2;
       if (!(bvh->intersect(out, &isect2))) continue;
       Vector3D L(isect2.bsdf->get_emission());
@@ -120,7 +120,7 @@ PathTracer::estimate_direct_lighting_importance(const Ray &r,
           wio = w2o * wi;
           if (wio.z < 0) continue;
           Ray out(hit_p, wi);
-          out.min_t = EPS_F;
+          out.min_t = EPS_D;
           out.max_t = distToLight - EPS_F;
           if ((bvh->has_intersection(out))) continue;
           Vector3D fr(isect.bsdf->f(w_out, wio));
@@ -136,7 +136,7 @@ PathTracer::estimate_direct_lighting_importance(const Ray &r,
               wio = w2o * wi;
               if (wio.z < 0) continue;
               Ray out(hit_p, wi);
-              out.min_t = EPS_F;
+              out.min_t = EPS_D;
               out.max_t = distToLight - EPS_F;
               if ((bvh->has_intersection(out))) continue;
               Vector3D fr(isect.bsdf->f(w_out, wio));
@@ -191,19 +191,19 @@ Vector3D PathTracer::at_least_one_bounce_radiance(const Ray &r,
   L_out += one_bounce_radiance(r, isect);
 
   if (r.depth != 1) {
-      if (coin_flip(0.6)) {
+      if (coin_flip(0.8)) {
           Vector3D wio(0.0);
           double pdf;
           Vector3D fr(isect.bsdf->sample_f(w_out, &wio, &pdf));
           Vector3D wi = o2w * wio;
           wi.normalize();
           Ray r_recur(hit_p, wi, (int) r.depth - 1);
-          r_recur.min_t = EPS_F;
+          r_recur.min_t = EPS_D;
           Intersection isect2;
           if (bvh->intersect(r_recur, &isect2)) {
               Vector3D radiance(at_least_one_bounce_radiance(r_recur, isect2));
               double cosTheta(cos_theta(wio));
-              L_out += ((fr * radiance * cosTheta) / pdf) / 0.6;
+              L_out += ((fr * radiance * cosTheta) / pdf) / 0.8;
           }
       }
   }
@@ -218,7 +218,7 @@ Vector3D PathTracer::at_least_one_bounce_radiance(const Ray &r,
 
 Vector3D PathTracer::est_radiance_global_illumination(const Ray &r) {
   Intersection isect;
-  Vector3D L_out;
+  Vector3D L_out(0.0);
 
   // You will extend this in assignment 3-2.
   // If no intersection occurs, we simply return black.
@@ -231,9 +231,9 @@ Vector3D PathTracer::est_radiance_global_illumination(const Ray &r) {
   // REMOVE THIS LINE when you are ready to begin Part 3.
   
   if (!bvh->intersect(r, &isect))
-    return envLight ? envLight->sample_dir(r) : L_out;
+      return envLight ? envLight->sample_dir(r) : L_out;
 
-  //if (isect.t == INF_F) return debug_shading(r.d);
+  //if (isect.t == INF_D) return debug_shading(r.d);
   L_out = zero_bounce_radiance(r, isect);
   L_out += at_least_one_bounce_radiance(r, isect);
 
@@ -256,21 +256,35 @@ void PathTracer::raytrace_pixel(size_t x, size_t y) {
     // Modify your implementation to include adaptive sampling.
     // Use the command line parameters "samplesPerBatch" and "maxTolerance"
 
-  int num_samples = ns_aa;          // total samples to evaluate
+  int num_samples(ns_aa);          // total samples to evaluate
   Vector2D origin = Vector2D(x, y); // bottom left corner of the pixel
   Vector3D buff(0.0,0.0,0.0);
+  double s1(0.0), s2(0.0);
   for (int i = 0; i < ns_aa; i++) {
+      if ((i != 0) && ((i % samplesPerBatch) == 0)) {
+          double avg(0.0), var(0.0), se(0.0), ci(0.0); //average, variance, standard error, confidence interval
+          avg = s1 / (double)i;
+          var = (1 / ((double)i)) * (s2 - (pow(s1, 2) / (double) i));
+          se = sqrt(var / (double) i);
+          ci = 1.96 * se;
+          if ((ci < (maxTolerance * avg)) || (avg < EPS_D)) {
+              num_samples = i;
+              break;
+          }
+      }
       Vector2D coord(origin + gridSampler->get_sample());
       Ray random_ray(camera->generate_ray(coord.x / sampleBuffer.w, coord.y/ sampleBuffer.h));
       random_ray.depth = max_ray_depth;
       Vector3D color(est_radiance_global_illumination(random_ray));
       buff += color;
+      s1 += color.illum();
+      s2 += pow(color.illum(), 2);
   }
-  buff *= 1.0/ns_aa;
+  buff *= 1.0/num_samples;
   
 
     sampleBuffer.update_pixel(buff, x, y);
-    //sampleCountBuffer[x + y * sampleBuffer.w] = num_samples;
+    sampleCountBuffer[x + y * sampleBuffer.w] = num_samples;
 }
 
 
