@@ -192,17 +192,17 @@ Vector3D PathTracer::at_least_one_bounce_radiance(const Ray &r,
 
   if (r.depth != 1) {
       if (coin_flip(0.6)) {
-          Vector3D wi(0.0);
+          Vector3D wio(0.0);
           double pdf;
-          Vector3D fr(isect.bsdf->sample_f(w_out, &wi, &pdf));
-          Vector3D wi_w = o2w * wi;
-          wi_w.normalize();
+          Vector3D fr(isect.bsdf->sample_f(w_out, &wio, &pdf));
+          Vector3D wi = o2w * wio;
+          wi.normalize();
           Ray r_recur(hit_p, wi, (int) r.depth - 1);
           r_recur.min_t = EPS_F;
           Intersection isect2;
           if (bvh->intersect(r_recur, &isect2)) {
               Vector3D radiance(at_least_one_bounce_radiance(r_recur, isect2));
-              double cosTheta(cos_theta(wi_w));
+              double cosTheta(cos_theta(wio));
               L_out += ((fr * radiance * cosTheta) / pdf) / 0.6;
           }
       }
