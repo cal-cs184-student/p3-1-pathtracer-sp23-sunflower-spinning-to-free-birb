@@ -41,7 +41,7 @@
 
 <h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2023</h1>
 <h1 align="middle">Project 3-1: Path Tracer</h1>
-<h2 align="middle">YOUR NAME(S)</h2>
+<h2 align="middle">Ziqi Shi, Buyi Geng</h2>
 
 <!-- Add Website URL -->
 <h2 align="middle">Website URL: <a href="TODO">TODO</a></h2>
@@ -49,42 +49,11 @@
 <br><br>
 
 
-<div align="center">
-  <table style="width=100%">
-      <tr>
-          <td align="middle">
-          <img src="images/example_image.png" width="480px" />
-          <figcaption align="middle">Results Caption: my bunny is the bounciest bunny</figcaption>
-      </tr>
-  </table>
-</div>
 
-<p>All of the text in your write-up should be <em>in your own words</em>. If you need to add additional HTML features to this document, you can search the <a href="http://www.w3schools.com/">http://www.w3schools.com/</a> website for instructions. To edit the HTML, you can just copy and paste existing chunks and fill in the text and image file names appropriately.</p>
-<o>The website writeup is intended to be a self-contained walkthrough of the assignment: we want this to be a piece of work which showcases your understanding of relevant concepts through both mesh images as well as written explanations about what you did to complete each part of the assignment. Try to be as clear and organized as possible when writing about your own output files or extensions to the assignment. We want to understand what you've achieved and how you've done it!</p> 
-<p>If you are well-versed in web development, feel free to ditch this template and make a better looking page.</p>
-
-
-<p>Here are a few problems students have encountered in the past. Test your website on the instructional machines early!</p>
-<ul>
-<li>Your main report page should be called index.html.</li>
-<li>Be sure to include and turn in all of the other files (such as images) that are linked in your report!</li>
-<li>Use only <em>relative</em> paths to files, such as <pre>"./images/image.jpg"</pre>
-Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.jpg"</pre></li>
-<li>Pay close attention to your filename extensions. Remember that on UNIX systems (such as the instructional machines), capitalization matters. <pre>.png != .jpeg != .jpg != .JPG</pre></li>
-<li>Be sure to adjust the permissions on your files so that they are world readable. For more information on this please see this tutorial: <a href="http://www.grymoire.com/Unix/Permissions.html">http://www.grymoire.com/Unix/Permissions.html</a></li>
-<li>And again, test your website on the instructional machines early!</li>
-</ul>
-
-
-<p>Here is an example of how to include a simple formula:</p>
-<p align="middle"><pre align="middle">a^2 + b^2 = c^2</pre></p>
-<p>or, alternatively, you can include an SVG image of a LaTex formula.</p>
-
-<div>
 
     <h2 align="middle">Overview</h2>
     <p>
-        YOUR RESPONSE GOES HERE
+        In this project, we will explore five main parts: (1) Basic Ray Tracing, which involves implementing ray generation, primitive intersection, and normal shading; (2) BVH Acceleration, where we construct a Bounding Volume Hierarchy to optimize rendering times; (3) Direct Lighting, focusing on implementing direct lighting functions and comparing noise levels in soft shadows using different sampling techniques; (4) Global Illumination, which includes implementing indirect lighting functions and rendering views with direct and indirect illumination; and (5) Adaptive Sampling, where we develop an adaptive sampling algorithm to optimize rendering by concentrating samples in the more difficult parts of the image.
     </p>
     <br />
 
@@ -118,11 +87,11 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
     </p>
     <ul>
         <li>
-            <b>Task 1-Ray Generation:</b>
+            <b>Ray Generation:</b>
 
 
             </p><p>
-                Task 1 can be divided into 3 steps:
+                can be divided into 3 steps:
             </p>
 
             <p>
@@ -156,7 +125,7 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
 
         </li>
         <li>
-            <b>Task 2-Scene Intersection</b>:
+            <b>Scene Intersection</b>:
             <p>
                 This function takes in the pixel coordinates (x, y) and updates the corresponding pixel in the sampleBuffer with an estimate of the integral of radiance over this pixel. The estimate is obtained by averaging ns_aa samples.
             </p>
@@ -231,21 +200,21 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
         <table style="width:100%">
             <tr align="center">
                 <td>
-                    <img src="images/test_banana.png" align="middle" width="400px" />
+                    <img src="images/test_cube.png" align="middle" width="400px" />
 
                 </td>
                 <td>
-                    <img src="images/test_building.png" align="middle" width="400px" />
+                    <img src="images/test_banana.png" align="middle" width="400px" />
 
                 </td>
             </tr>
             <tr align="center">
                 <td>
-                    <img src="images/test_cube.png" align="middle" width="400px" />
+                    <img src="images/CBempty.png" align="middle" width="400px" />
 
                 </td>
                 <td>
-                    <img src="images/test_plane.png" align="middle" width="400px" />
+                    <img src="images/CBspheres.png" align="middle" width="400px" />
 
                 </td>
             </tr>
@@ -263,7 +232,36 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
         Walk through your BVH construction algorithm. Explain the heuristic you chose for picking the splitting point.
     </h3>
     </p><p>
-        YOUR RESPONSE GOES HERE
+        The Bounding Volume Hierarchy (BVH) construction algorithm is a recursive process that aims to create an efficient binary tree structure to speed up the rendering process, which can be devided into six steps:
+        <ul>
+            <li>
+                Compute the bounding box of a list of primitives and initialize a new BVHNode with that bounding box.
+            </li>
+
+            <li>
+                Check the number of primitives in the list against the max_leaf_size
+            </li>
+
+            <li>
+                Determine the axis along which to split the primitives: In our implementation, we chose the axis with the longest extent of the bounding box. This approach generally provides a good balance between traversal and intersection costs.
+            </li>
+
+            <li>
+                Pick the splitting point along the chosen axis. For our implementation, we used the average of the centroids of the bounding boxes of the primitives along the chosen axis. This helps distribute the primitives evenly between the left and right collections, optimizing the BVH structure for faster rendering.
+            </li>
+
+            <li>
+                Divide the primitives into "left" and "right" collections based on the chosen splitting point. The primitives whose bounding box centroids are less than or equal to the split point go to the left collection, and those greater than the split point go to the right collection.
+            </li>
+
+            <li>
+                Recursively call the BVH construction algorithm on both the left and right collections, and set the current node's left and right children with the resulting BVHNodes.
+            </li>
+
+        </ul>
+
+        By using this algorithm and heuristic, the BVH construction process creates an efficient tree structure that allows the path tracer to quickly discard collections of primitives that a particular ray is guaranteed not to intersect. This significantly improves rendering times for complex geometries.
+
     </p>
 
     <h3>
@@ -274,33 +272,37 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
         <table style="width:100%">
             <tr align="center">
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
-                    <figcaption>example1.dae</figcaption>
+                    <img src="images/cow.png" align="middle" width="400px" />
+
                 </td>
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
-                    <figcaption>example2.dae</figcaption>
+                    <img src="images/CBlucy.png" align="middle" width="400px" />
+
                 </td>
             </tr>
             <tr align="center">
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
-                    <figcaption>example3.dae</figcaption>
+                    <img src="images/maxplanck.png" align="middle" width="400px" />
+
                 </td>
                 <td>
                     <img src="images/your_file.png" align="middle" width="400px" />
-                    <figcaption>example4.dae</figcaption>
+
                 </td>
             </tr>
         </table>
     </div>
     <br />
 
+    <p>
+        These images demonstrate the ability of the path tracer with BVH acceleration to efficiently render highly complex scenes with a large number of triangles. The implementation of BVH significantly reduces rendering times, enabling the rendering of intricate models that would otherwise take an impractical amount of time without BVH acceleration.
+    </p>
+
     <h3>
         Compare rendering times on a few scenes with moderately complex geometries with and without BVH acceleration. Present your results in a one-paragraph analysis.
     </h3>
     <p>
-        YOUR RESPONSE GOES HERE
+        The implementation of the Bounding Volume Hierarchy (BVH) significantly improves the rendering times for scenes with moderately complex geometries. Comparing the rendering times before and after implementing the BVH, we can observe a substantial decrease in time.This improvement is primarily due to the reduction of ray intersection complexity from O(n) to O(log(n)) using BVH, allowing the path tracer to render scenes with higher complexity more efficiently. The optimized tree structure created by the BVH construction algorithm enables the path tracer to quickly discard collections of primitives that a particular ray is guaranteed not to intersect, which translates into faster rendering times for moderately complex geometries.
     </p>
     <br />
 
@@ -313,9 +315,96 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
     <h3>
         Walk through both implementations of the direct lighting function.
     </h3>
+
+    <ul>
+        <li>
+            Direct Lighting with Uniform Hemisphere Sampling (Task 3):
+        </li>
+    </ul>
+
+    The function, estimate_direct_lighting_hemisphere(intersection, scene, num_samples), aims to estimate the direct lighting on a point by sampling uniformly in a hemisphere around that point.
+
     <p>
-        YOUR RESPONSE GOES HERE
+        a. Initialize a variable to accumulate the sum of lighting contributions from all the samples.
     </p>
+
+    <p>
+        b. Loop through the number of samples (num_samples) specified.
+    </p>
+    <p>
+        c. For each sample, use the UniformHemisphereSampler3D to generate a random direction vector in the object-space hemisphere around the intersection's normal.
+    </p>
+    <p>
+        d. Convert the direction vector to world-space coordinates using the intersection's shading basis.
+    </p>
+
+    <p>
+        e. Create a new ray with the intersection point as the origin and the world-space direction vector as the direction.
+    </p>
+
+    <p>
+        f. Cast the ray through the scene to see if it intersects with a light source.
+    </p>
+
+
+    <p>
+        g. If the ray intersects a light source, calculate the lighting contribution by multiplying the BRDF value, the light's radiance, and the cosine of the angle between the light direction and the surface normal. Accumulate this value in the variable initialized in step a.
+    </p>
+
+    <p>
+        h. After the loop, divide the accumulated lighting value by the number of samples to get the average lighting contribution. This is the final direct lighting estimate.
+
+    </p>
+    <ul>
+        <li>
+            Direct Lighting by Importance Sampling Lights (Task 4):
+        </li>
+    </ul>
+    <p>
+        The function, estimate_direct_lighting_importance(intersection, scene, num_samples), estimates the direct lighting on a point by sampling light sources in the scene based on their importance.
+    </p>
+
+    <p>
+        a. Initialize a variable to accumulate the sum of lighting contributions from all the samples.
+    </p>
+
+    <p>
+        b. Loop through the number of samples (num_samples) specified.
+    </p>
+
+    <p>
+        c. For each sample, choose a random light source from the scene, considering the light's power as its importance weight.
+    </p>
+
+    <p>
+        d. Use the sample() function of the chosen light to get a sampled point on the light source, the light's radiance at the sampled point, and the probability density function (PDF) value.
+    </p>
+
+    <p>
+        e. Calculate the direction vector from the intersection point to the sampled point on the light source.
+    </p>
+
+    <p>
+        f. Create a new ray with the intersection point as the origin and the direction vector as the direction.
+    </p>
+
+    <p>
+        g. Cast the ray through the scene to see if it intersects with the chosen light source.
+    </p>
+
+    <p>
+        h. If the ray intersects the chosen light source, calculate the lighting contribution by multiplying the BRDF value, the light's radiance, and the cosine of the angle between the light direction and the surface normal. Then divide this value by the PDF value. Accumulate this value in the variable initialized in step a.
+
+    </p>
+
+    <p>
+        i. After the loop, divide the accumulated lighting value by the number of samples to get the average lighting contribution. This is the final direct lighting estimate.
+    </p>
+
+    <p>
+        These two methods provide different trade-offs. Uniform hemisphere sampling can produce more noise due to sampling directions that do not contribute to the lighting. Importance sampling, on the other hand, focuses on sampling the light sources directly, which can provide better convergence and less noise.
+    </p>
+
 
     <h3>
         Show some images rendered with both implementations of the direct lighting function.
@@ -335,23 +424,23 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
             <br />
             <tr align="center">
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
-                    <figcaption>example1.dae</figcaption>
+                    <img src="images/CBbunny_64_32.png" align="middle" width="400px" />
+                    <figcaption>CBbunny.dae</figcaption>
                 </td>
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
-                    <figcaption>example1.dae</figcaption>
+                    <img src="images/CBbunny_64_32_B.png" align="middle" width="400px" />
+                    <figcaption>CBbunny.dae</figcaption>
                 </td>
             </tr>
             <br />
             <tr align="center">
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
-                    <figcaption>example2.dae</figcaption>
+                    <img src="images/dragon_64_32.png" align="middle" width="400px" />
+                    <figcaption>dragon.dae</figcaption>
                 </td>
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
-                    <figcaption>example2.dae</figcaption>
+                    <img src="images/dragon_64_32_B.png" align="middle" width="400px" />
+                    <figcaption>dragon.dae</figcaption>
                 </td>
             </tr>
             <br />
@@ -367,36 +456,52 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
         <table style="width:100%">
             <tr align="center">
                 <td>
-                    <img src="images/your_file.png" align="middle" width="200px" />
-                    <figcaption>1 Light Ray (example1.dae)</figcaption>
+                    <img src="images/bunny1.png" align="middle" width="200px" />
+                    <figcaption>1 Light Ray (bunny.dae)</figcaption>
                 </td>
                 <td>
-                    <img src="images/your_file.png" align="middle" width="200px" />
-                    <figcaption>4 Light Rays (example1.dae)</figcaption>
+                    <img src="images/bunny2.png" align="middle" width="200px" />
+                    <figcaption>4 Light Rays (bunny.dae)</figcaption>
                 </td>
             </tr>
             <tr align="center">
                 <td>
-                    <img src="images/your_file.png" align="middle" width="200px" />
-                    <figcaption>16 Light Rays (example1.dae)</figcaption>
+                    <img src="images/bunny3.png" align="middle" width="200px" />
+                    <figcaption>16 Light Rays (bunny.dae)</figcaption>
                 </td>
                 <td>
-                    <img src="images/your_file.png" align="middle" width="200px" />
-                    <figcaption>64 Light Rays (example1.dae)</figcaption>
+                    <img src="images/bunny4.png" align="middle" width="200px" />
+                    <figcaption>64 Light Rays (bunny.dae)</figcaption>
                 </td>
             </tr>
         </table>
     </div>
     <p>
-        YOUR EXPLANATION GOES HERE
+        With 1 light ray (-l 1), the rendered image exhibits a high level of noise in the soft shadows, making the scene appear grainy and less visually appealing.
+    </p>
+
+    <p>
+        As we increase the number of light rays to 4 (-l 4), the noise level in the soft shadows is reduced, but still noticeable. The overall quality of the image is improved compared to the 1 light ray case, but it still lacks smoothness.
+    </p>
+
+    <p>
+        When rendered with 16 light rays (-l 16), the noise level in the soft shadows is further reduced, resulting in a more visually appealing image. The shadows appear smoother, and the overall lighting in the scene is more accurate and consistent.
+    </p>
+
+    <p>
+        Finally, with 64 light rays (-l 64), the noise level in the soft shadows is significantly minimized. The rendered image has smooth and realistic shadows, offering the best visual quality among the compared cases.
+    </p>
+
+    <p>
+        In summary, as the number of light rays increases, the noise levels in the soft shadows decrease, resulting in smoother and more accurate shadows. It's essential to find the right balance between the number of light rays and rendering time, as increasing the number of light rays can also lead to longer rendering times.
     </p>
     <br />
 
     <h3>
         Compare the results between uniform hemisphere sampling and lighting sampling in a one-paragraph analysis.
     </h3>
-    <p>
-        YOUR RESPONSE GOES HERE
+    </p><p>
+        When comparing uniform hemisphere sampling and light sampling, we can observe significant differences in the noise levels and rendering efficiency. Uniform hemisphere sampling tends to produce noisier images with more visible artifacts in the shadows, as it samples the entire hemisphere uniformly without considering the actual light source positions. As a result, many of the samples may not contribute to the illumination of the point being shaded, leading to increased noise and less accurate shadow representation. On the other hand, light sampling directly targets the light sources, which results in a more efficient use of samples and reduced noise levels. This approach yields smoother shadows, fewer artifacts, and a more realistic appearance overall. Although light sampling can sometimes require more computation than uniform hemisphere sampling, the trade-off is generally worth it, as the improved image quality is essential for achieving realistic renderings.
     </p>
     <br />
 
@@ -412,9 +517,54 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
     <h3>
         Walk through your implementation of the indirect lighting function.
     </h3>
+
+    <ul>
+        <li>
+            First, we implement the at_least_one_bounce_radiance function, which handles both direct and indirect lighting. It starts by calling the one_bounce_radiance function for direct lighting and stores its result in the direct_light variable.
+        </li>
+    </ul>
+
+    <ul>
+        <li>
+            Next, we sample a random direction based on the BSDF at the hit point using the sample_f function provided by the BSDF class. This function takes the outgoing radiance direction and returns a sampled incoming direction along with its probability density function (PDF) value.
+        </li>
+    </ul>
+
+    <ul>
+        <li>
+            We then trace a new ray in the sampled direction, adding a small epsilon (EPS_F) to the origin to avoid self-intersection issues. The new ray's depth should be one less than the current ray's depth to account for the additional bounce.
+        </li>
+    </ul>
+
+    <ul>
+        <li>
+            The at_least_one_bounce_radiance function is recursively called with the new ray and intersection information to estimate the radiance contributed by higher bounces.
+        </li>
+    </ul>
+
+    <ul>
+        <li>
+            We calculate the indirect lighting contribution by multiplying the BSDF value, the indirect radiance, and the cosine factor, then dividing by the PDF value. This result is stored in the indirect_light variable.
+        </li>
+    </ul>
+
+    <ul>
+        <li>
+            To prevent infinite recursion, we implement Russian Roulette for random termination. We generate a random number and compare it to the termination probability. If the random number is less than the termination probability, we terminate the recursion and return only the direct lighting contribution.
+        </li>
+    </ul>
+
+    <ul>
+        <li>
+            Finally, we incorporate the at_least_one_bounce_radiance function into the est_radiance_global_illumination function, which estimates the total radiance with global illumination arriving at a point from a particular direction.
+        </li>
+    </ul>
+
     <p>
-        YOUR RESPONSE GOES HERE
+        With this implementation, our path tracer is capable of handling indirect lighting and rendering images with global illumination. This adds a level of visual richness to the rendered scenes, as it accounts for complex lighting interactions such as color bleeding in Lambertian scenes.
     </p>
+
+
     <br />
 
     <h3>
@@ -425,11 +575,11 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
         <table style="width:100%">
             <tr align="center">
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
+                    <img src="images/bunny4.png" align="middle" width="400px" />
                     <figcaption>example1.dae</figcaption>
                 </td>
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
+                    <img src="images/dragon4.png" align="middle" width="400px" />
                     <figcaption>example2.dae</figcaption>
                 </td>
             </tr>
@@ -457,7 +607,7 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
     </div>
     <br />
     <p>
-        YOUR EXPLANATION GOES HERE
+        The direct illumination image shows the immediate lighting from light sources, while the indirect illumination image shows the light that has bounced off surfaces in the scene.
     </p>
     <br />
 
@@ -469,27 +619,27 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
         <table style="width:100%">
             <tr align="center">
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
+                    <img src="images/b0.png" align="middle" width="400px" />
                     <figcaption>max_ray_depth = 0 (CBbunny.dae)</figcaption>
                 </td>
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
+                    <img src="images/b1.png" align="middle" width="400px" />
                     <figcaption>max_ray_depth = 1 (CBbunny.dae)</figcaption>
                 </td>
             </tr>
             <tr align="center">
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
+                    <img src="images/b2.png" align="middle" width="400px" />
                     <figcaption>max_ray_depth = 2 (CBbunny.dae)</figcaption>
                 </td>
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
+                    <img src="images/b3.png" align="middle" width="400px" />
                     <figcaption>max_ray_depth = 3 (CBbunny.dae)</figcaption>
                 </td>
             </tr>
             <tr align="center">
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
+                    <img src="images/b100.png" align="middle" width="400px" />
                     <figcaption>max_ray_depth = 100 (CBbunny.dae)</figcaption>
                 </td>
             </tr>
@@ -497,7 +647,7 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
     </div>
     <br />
     <p>
-        YOUR EXPLANATION GOES HERE
+        Increasing the max_ray_depth enhances the global illumination and overall realism of the rendered image. However, there is a diminishing return on image quality after a certain depth, as the energy of light rays diminishes with each bounce. Therefore, it's essential to find a balance between max_ray_depth and computational resources to achieve the desired level of realism while maintaining reasonable rendering times.
     </p>
     <br />
 
@@ -509,37 +659,37 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
         <table style="width:100%">
             <tr align="center">
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
+                    <img src="images/s1.png" align="middle" width="400px" />
                     <figcaption>1 sample per pixel (example1.dae)</figcaption>
                 </td>
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
+                    <img src="images/s2.png" align="middle" width="400px" />
                     <figcaption>2 samples per pixel (example1.dae)</figcaption>
                 </td>
             </tr>
             <tr align="center">
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
+                    <img src="images/s4.png" align="middle" width="400px" />
                     <figcaption>4 samples per pixel (example1.dae)</figcaption>
                 </td>
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
+                    <img src="images/s8.png" align="middle" width="400px" />
                     <figcaption>8 samples per pixel (example1.dae)</figcaption>
                 </td>
             </tr>
             <tr align="center">
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
+                    <img src="images/s16.png" align="middle" width="400px" />
                     <figcaption>16 samples per pixel (example1.dae)</figcaption>
                 </td>
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
+                    <img src="images/s64.png" align="middle" width="400px" />
                     <figcaption>64 samples per pixel (example1.dae)</figcaption>
                 </td>
             </tr>
             <tr align="center">
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
+                    <img src="images/s1024.png" align="middle" width="400px" />
                     <figcaption>1024 samples per pixel (example1.dae)</figcaption>
                 </td>
             </tr>
@@ -547,7 +697,7 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
     </div>
     <br />
     <p>
-        YOUR EXPLANATION GOES HERE
+        In conclusion, increasing the samples per pixel improves the image quality by reducing noise and capturing a more accurate representation of the scene. However, higher SPP values come at the cost of increased computational time. It's essential to find a balance between the desired visual quality and the available computational resources.
     </p>
     <br />
 
@@ -559,9 +709,41 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
     <h3>
         Explain adaptive sampling. Walk through your implementation of the adaptive sampling.
     </h3>
+
+    <ul>
+        <li>
+            Adaptive sampling:
+        </li>
+    </ul>
+
     <p>
-        YOUR RESPONSE GOES HERE
+        Adaptive sampling is a technique used in Monte Carlo path tracing to efficiently distribute the samples in an image by focusing more on the regions that require a higher number of samples to converge while spending less time on regions that converge faster with fewer samples. This approach helps reduce noise in the rendered image without uniformly increasing the number of samples per pixel, which can save significant computation time.
     </p>
+
+    <ul>
+        <li>
+            Implementation:
+        </li>
+    </ul>
+
+    <p>
+        In the PathTracer::raytrace_pixel() function in src/pathtracer/pathtracer.cpp, keep track of the sum of the illuminance (s_1) and the sum of the squared illuminance (s_2) for each pixel as you process samples.
+    </p>
+
+    <p>
+        For every samplesPerBatch samples, calculate the mean (μ) and variance (σ^2) of the samples using the running sums s_1 and s_2. Compute the standard deviation (σ) and the convergence measure I using the formula mentioned above.
+    </p>
+
+    <p>
+        Check the convergence condition. If the pixel has converged, stop sampling rays for that pixel. Otherwise, continue sampling until you reach the maximum number of samples (ns_aa).
+    </p>
+
+    <p>
+        Update the sampleCountBuffer with the actual number of samples per pixel to visualize the output sampling rate image.
+    </p>
+
+
+
     <br />
 
     <h3>
@@ -572,28 +754,38 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
         <table style="width:100%">
             <tr align="center">
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
-                    <figcaption>Rendered image (example1.dae)</figcaption>
+                    <img src="images/bunny5.png" align="middle" width="400px" />
+                    <figcaption>Rendered image (bunny.dae)</figcaption>
                 </td>
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
-                    <figcaption>Sample rate image (example1.dae)</figcaption>
+                    <img src="images/bunny5_rate.png" align="middle" width="400px" />
+                    <figcaption>Sample rate image (bunny.dae)</figcaption>
                 </td>
             </tr>
             <tr align="center">
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
-                    <figcaption>Rendered image (example2.dae)</figcaption>
+                    <img src="images/dragon5.png" align="middle" width="400px" />
+                    <figcaption>Rendered image (dragon.dae)</figcaption>
                 </td>
                 <td>
-                    <img src="images/your_file.png" align="middle" width="400px" />
-                    <figcaption>Sample rate image (example2.dae)</figcaption>
+                    <img src="images/dragon5_rate.png" align="middle" width="400px" />
+                    <figcaption>Sample rate image (dragon.dae)</figcaption>
                 </td>
             </tr>
         </table>
     </div>
     <br />
 
+    <p>
+        In this comparison, we have selected two scenes to render with adaptive sampling, using at least 2048 samples per pixel (SPP). We will use 1 sample per light and a max ray depth of at least 5. The goal is to demonstrate the differences in sampling rate over various regions and pixels while providing a noise-free rendered result.
+    </p>
 
-</div></body>
+    <p>
+        In conclusion, adaptive sampling allows for an efficient allocation of computational resources, focusing on the more challenging parts of a scene. The resulting images are noise-free and showcase accurate lighting, shading, and fine details, providing a visually appealing and realistic representation of the scenes.
+    </p>
+
+
+
+        </li>
+    </p></div></body>
 </html>
