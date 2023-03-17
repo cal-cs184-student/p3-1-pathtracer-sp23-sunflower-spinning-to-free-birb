@@ -236,7 +236,7 @@ Vector3D PathTracer::est_radiance_global_illumination(const Ray &r) {
       return envLight ? envLight->sample_dir(r) : L_out;
 
   //if (isect.t == INF_D) return debug_shading(r.d);
-  bool task2flag(1), task3flag(0), task4flag(0);
+  bool task2flag(0), task3flag(0), task4flag(0);
   if (task2flag) return normal_shading(isect.n);
   L_out = zero_bounce_radiance(r, isect);
   L_out += (task3flag ? one_bounce_radiance(r, isect) : at_least_one_bounce_radiance(r, isect));
