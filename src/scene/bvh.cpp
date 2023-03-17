@@ -76,26 +76,26 @@ BVHNode *BVHAccel::construct_bvh(std::vector<Primitive *>::iterator start,
       return node;
   }
 
-  BBox candidate[3][16][2] = {0};
-  int buckets[3][16][2] = {0};
   double lowest_cost = INF_D;
   for (int i = 0; i < 3; i++) {
         for (int j = 1; j < 16; j++) {
+            BBox left, right;
+            int left_b(0), right_b(0);
             double plane = bbox.min[i] + ((bbox.max[i] - bbox.min[i]) / 16.0) * j;
             for (auto p = start; p != end; p++) {
                 BBox bb = (*p)->get_bbox();
                 if (bb.centroid()[i] < plane) {
-                    candidate[i][j][0].expand(bb);
-                    buckets[i][j][0] ++;
+                    left.expand(bb);
+                    left_b++;
                 }
                 else {
-                    candidate[i][j][1].expand(bb);
-                    buckets[i][j][1] ++;
+                    right.expand(bb);
+                    right_b++;
                 }
             }
-            double cost = buckets[i][j][1] * candidate[i][j][1].surface_area() 
-                + buckets[i][j][0] * candidate[i][j][0].surface_area();
-            if (buckets[i][j][0] * buckets[i][j][1] == 0) continue;
+            double cost = ((double)left_b) * left.surface_area()
+                + ((double)right_b)*right.surface_area();
+            if (!(right_b && left_b)) continue;
             if (cost < lowest_cost) {
                 axis = i; 
                 bucket = j;
@@ -103,6 +103,7 @@ BVHNode *BVHAccel::construct_bvh(std::vector<Primitive *>::iterator start,
             }
         }
   }
+
 
   plane = bbox.min[axis] + ((bbox.max[axis] - bbox.min[axis]) / 16.0) * bucket;
 

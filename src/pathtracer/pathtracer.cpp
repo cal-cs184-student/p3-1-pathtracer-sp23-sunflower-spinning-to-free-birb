@@ -188,9 +188,11 @@ Vector3D PathTracer::at_least_one_bounce_radiance(const Ray &r,
 
   Vector3D L_out(0.0, 0.0, 0.0);
 
+  if (r.depth == 0) return L_out;
+
   L_out += one_bounce_radiance(r, isect);
 
-  if (r.depth != 1) {
+  if (r.depth > 1) {
       if (coin_flip(0.8)) {
           Vector3D wio(0.0);
           double pdf;
@@ -234,9 +236,11 @@ Vector3D PathTracer::est_radiance_global_illumination(const Ray &r) {
       return envLight ? envLight->sample_dir(r) : L_out;
 
   //if (isect.t == INF_D) return debug_shading(r.d);
+  bool task2flag(1), task3flag(0), task4flag(0);
+  if (task2flag) return normal_shading(isect.n);
   L_out = zero_bounce_radiance(r, isect);
-  L_out += at_least_one_bounce_radiance(r, isect);
-
+  L_out += (task3flag ? one_bounce_radiance(r, isect) : at_least_one_bounce_radiance(r, isect));
+  if (task4flag) L_out -= (one_bounce_radiance(r, isect) + zero_bounce_radiance(r, isect));
   // TODO (Part 3): Return the direct illumination.
 
   // TODO (Part 4): Accumulate the "direct" and "indirect"
